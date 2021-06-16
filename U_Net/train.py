@@ -17,11 +17,6 @@ from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 
 
-
-#Set gpu num !!
-#
-
-
 def train_net(net,
               device,
               epochs=5,
@@ -84,7 +79,7 @@ def train_net(net,
                 true_masks = true_masks.to(device=device, dtype=mask_type)
 
                 masks_pred = net(imgs)
-                true_masks = true_masks.squeeze(0)
+                true_masks = true_masks.squeeze()
                 #print("SHAPES:", masks_pred.shape, true_masks.shape)
                 loss = criterion(masks_pred, true_masks) #?! [1, 4, x, y] to [1, x, y]
                 epoch_loss += loss.item()
