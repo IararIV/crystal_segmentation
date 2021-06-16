@@ -16,9 +16,10 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
 
-dir_img = '/dls/tmp/lqg38422/TRAIN/recon/' #'data/imgs/'
-dir_mask = '/dls/tmp/lqg38422/TRAIN/gt/' #'data/masks/'
-dir_checkpoint = 'checkpoints/'
+
+
+#Set gpu num !!
+#
 
 
 def train_net(net,
@@ -28,7 +29,10 @@ def train_net(net,
               lr=0.001,
               val_percent=0.1,
               save_cp=True,
-              img_scale=0.5):
+              img_scale=0.5,
+              dir_img='',
+              dir_mask='',
+              dir_checkpoint=''):
 
     dataset = BasicDataset(dir_img, dir_mask, img_scale)
     n_val = int(len(dataset) * val_percent)
@@ -49,13 +53,16 @@ def train_net(net,
         Checkpoints:     {save_cp}
         Device:          {device.type}
         Images scaling:  {img_scale}
+        Images directory:{dir_img}
+        Masks directory: {dir_mask}
+        Checkpoint directory: {dir_checkpoint}
     ''')
 
     optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
     if net.n_classes > 1:
-        criterion = nn.BCEWithLogitsLoss()
-        #criterion = nn.CrossEntropyLoss()
+        #criterion = nn.BCEWithLogitsLoss()
+        criterion = nn.CrossEntropyLoss()
     else:
         criterion = nn.BCEWithLogitsLoss()
 
@@ -73,11 +80,13 @@ def train_net(net,
                     'the images are loaded correctly.'
 
                 imgs = imgs.to(device=device, dtype=torch.float32)
-                mask_type = torch.float32 #if net.n_classes == 1 else torch.long
+                mask_type = torch.float32 if net.n_classes == 1 else torch.long
                 true_masks = true_masks.to(device=device, dtype=mask_type)
 
                 masks_pred = net(imgs)
-                loss = criterion(masks_pred, true_masks) #?! .squeeze(0)
+                true_masks = true_masks.squeeze(0)
+                #print("SHAPES:", masks_pred.shape, true_masks.shape)
+                loss = criterion(masks_pred, true_masks) #?! [1, 4, x, y] to [1, x, y]
                 epoch_loss += loss.item()
                 writer.add_scalar('Loss/train', loss.item(), global_step)
 
@@ -139,6 +148,14 @@ def get_args():
                         help='Downscaling factor of the images')
     parser.add_argument('-v', '--validation', dest='val', type=float, default=10.0,
                         help='Percent of the data that is used as validation (0-100)')
+    parser.add_argument('-i', '--dir_img', dest='dir_img', type=str, default='/dls/tmp/lqg38422/TRAIN/recon/',
+                        help='Path to the folder containing the images')
+    parser.add_argument('-m', '--dir_mask', dest='dir_mask', type=str, default='/dls/tmp/lqg38422/TRAIN/gt/',
+                        help='Path to the folder cantaining the masks')
+    parser.add_argument('-c', '--dir_checkpoint', dest='dir_checkpoint', type=str, default='checkpoints/',
+                        help='Path to the folder where checkpoints will be stored')
+    parser.add_argument('-gpu', '--gpu_num', dest='gpu_num', type=int, default=0,
+                        help='Number of the GPU to be used')   
 
     return parser.parse_args()
 
@@ -146,8 +163,9 @@ def get_args():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     args = get_args()
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_num)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logging.info(f'Using device {device}')
+    logging.info(f'Using device {device} number {str(args.gpu_num)}')
 
     # Change here to adapt to your data
     # n_channels=3 for RGB images
@@ -178,7 +196,11 @@ if __name__ == '__main__':
                   lr=args.lr,
                   device=device,
                   img_scale=args.scale,
-                  val_percent=args.val / 100)
+                  val_percent=args.val / 100,
+                  dir_img=args.dir_img,
+                  dir_mask=args.dir_mask,
+                  dir_checkpoint=args.dir_checkpoint
+                  )
     except KeyboardInterrupt:
         torch.save(net.state_dict(), 'INTERRUPTED.pth')
         logging.info('Saved interrupt')

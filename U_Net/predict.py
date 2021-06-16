@@ -27,6 +27,7 @@ def predict_img(net,
 
     with torch.no_grad():
         output = net(img)
+        #output = torch.tensor(torch.argmax(output, dim=1), dtype=torch.float32) ?
 
         if net.n_classes > 1:
             probs = F.softmax(output, dim=1)
@@ -71,7 +72,7 @@ def get_args():
                         default=0.5)
     parser.add_argument('--scale', '-s', type=float,
                         help="Scale factor for the input images",
-                        default=0.5)
+                        default=1) #0.5
 
     return parser.parse_args()
 
