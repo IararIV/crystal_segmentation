@@ -22,7 +22,7 @@ def eval_net(net, loader, device):
                 mask_pred = net(imgs)
 
             if net.n_classes > 1:
-                true_masks = true_masks.squeeze(0)
+                true_masks = true_masks.squeeze()
                 tot += F.cross_entropy(mask_pred, true_masks).item() #?! .squeeze(0)
             else:
                 pred = torch.sigmoid(mask_pred)
