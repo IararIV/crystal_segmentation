@@ -22,20 +22,22 @@ def predict_img(net,
 
     img = torch.from_numpy(BasicDataset.preprocess(full_img, scale_factor))
 
-    img = img.unsqueeze(0)
+    img = img.unsqueeze(1)
     img = img.to(device=device, dtype=torch.float32)
 
     with torch.no_grad():
         output = net(img)
-        #output = torch.tensor(torch.argmax(output, dim=1), dtype=torch.float32) ?
 
         if net.n_classes > 1:
             probs = F.softmax(output, dim=1)
+            probs = torch.argmax(probs, dim=1).float().cpu()
         else:
             probs = torch.sigmoid(output)
 
-        probs = probs.squeeze(0)
-
+        if len(probs.shape) == 4:
+            probs = probs.squeeze(0)
+        
+        """
         tf = transforms.Compose(
             [
                 transforms.ToPILImage(),
@@ -43,11 +45,12 @@ def predict_img(net,
                 transforms.ToTensor()
             ]
         )
+        """
 
-        probs = tf(probs.cpu())
         full_mask = probs.squeeze().cpu().numpy()
+        print("Full mask:", full_mask.shape, np.unique(full_mask))
 
-    return full_mask > out_threshold
+    return full_mask #> out_threshold
 
 
 def get_args():
@@ -95,7 +98,7 @@ def get_output_filenames(args):
 
 
 def mask_to_image(mask):
-    return Image.fromarray((mask * 255).astype(np.uint8))
+    return Image.fromarray((mask).astype(np.uint8))
 
 
 if __name__ == "__main__":

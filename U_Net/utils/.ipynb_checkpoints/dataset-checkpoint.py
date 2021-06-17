@@ -13,9 +13,8 @@ class BasicDataset(Dataset):
         self.imgs_dir = imgs_dir
         self.masks_dir = masks_dir
         self.scale = scale
-        self.mask_suffix = mask_suffix
         assert 0 < scale <= 1, 'Scale must be between 0 and 1'
-
+        self.mask_suffix = mask_suffix
         self.ids = [splitext(file)[0] for file in listdir(imgs_dir)
                     if not file.startswith('.')]
         logging.info(f'Creating dataset with {len(self.ids)} examples')
@@ -57,28 +56,10 @@ class BasicDataset(Dataset):
         assert img.size == mask.size, \
             f'Image and mask {idx} should be the same size, but are {img.size} and {mask.size}'
                
-        img = self.preprocess(img, self.scale)
+        img = self.preprocess(img, self.scale, mode="img")
         mask = self.preprocess(mask, self.scale, mode="mask")
-        #print("MASK:", np.array(mask).shape, np.unique(mask))
-        
-        
-        # 4 values to 4 channels
-        """
-        mask = np.squeeze(mask)
-        new_img = np.zeros((4, ) + mask.shape)
-        new_img[0][mask == 0] = 1
-        new_img[1][mask == 1] = 1
-        new_img[2][mask == 2] = 1
-        new_img[3][mask == 3] = 1
-        mask = new_img
-        """
-        
+                
         return {
             'image': torch.from_numpy(img).type(torch.FloatTensor),
             'mask': torch.from_numpy(mask).type(torch.FloatTensor)
         }
-
-
-class CarvanaDataset(BasicDataset):
-    def __init__(self, imgs_dir, masks_dir, scale=1):
-        super().__init__(imgs_dir, masks_dir, scale, mask_suffix='_mask')
