@@ -1,0 +1,21 @@
+In X-ray imaging, it is common practice to normalize the acquired projection data with averaged ﬂat ﬁelds taken prior to the scan. Unfortunately, due to source 
+instabilities, vibrating beamline components such as the monochromator, time varying detector properties, or other confounding factors, ﬂat ﬁelds are often far 
+from stationary, resulting in signiﬁcant systematic errors in intensity normalization. In this work, a simple and eﬃcient method is proposed to account for 
+dynamically varying ﬂat ﬁelds. Through principal component analysis of a set of ﬂat ﬁelds, eigen ﬂat ﬁelds are computed. A linear combination of the most important 
+eigen ﬂat ﬁelds is then used to individually normalize each X-ray projection. Experiments show that the proposed dynamic ﬂat ﬁeld correction leads to a substantial 
+reduction of systematic errors in projection intensity normalization compared to conventional ﬂat ﬁeld correction.
+
+The code has been implemented as a plugin inside the package ToMoBAR, and can be imported as follows:
+from tomobar.supp.suppTools import normaliser
+
+The function supports three three different methods: 'mean', 'median' and 'dynamic'. When using DFFC, the function has the following parameters:
+normaliser(
+          "Parameters"
+           data   : data following the required format [detectorsHoriz, Projections, Slices], 
+           flats  : flat fields following the required format [H C W], 
+           darks  : dark fields following the required format [H C W], 
+           log    : if True, -log is applied to positive values, and negative values are set to 0, 
+           method : can be 'mean', 'median' and 'dynamic', 
+           dyn_downsample : data can be downsampled for fastest computation in 'dynamic', 
+           dyn_iterations : number of iterations to find optimal background representation in 'dynamic'
+           )
