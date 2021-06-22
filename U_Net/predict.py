@@ -51,8 +51,7 @@ def get_args():
                         help="Specify the file in which the model is stored")
     parser.add_argument('--input', '-i', metavar='INPUT',
                         help='Filenames of input images', required=True)
-
-    parser.add_argument('--output', '-o', metavar='INPUT', 
+    parser.add_argument('--output', '-o', metavar='OUTPUT', 
                         help='Filenames of ouput images')
     parser.add_argument('--viz', '-v', action='store_true',
                         help="Visualize the images as they are processed",
