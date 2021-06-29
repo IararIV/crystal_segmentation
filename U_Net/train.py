@@ -77,11 +77,10 @@ def train_net(net,
                 imgs = imgs.to(device=device, dtype=torch.float32)
                 mask_type = torch.float32 if net.n_classes == 1 else torch.long
                 true_masks = true_masks.to(device=device, dtype=mask_type)
-
                 masks_pred = net(imgs)
-                true_masks = true_masks.squeeze()
-                #print("SHAPES:", masks_pred.shape, true_masks.shape)
-                loss = criterion(masks_pred, true_masks) #?! [1, 4, x, y] to [1, x, y]
+                import time
+                true_masks = true_masks.squeeze(1)
+                loss = criterion(masks_pred, true_masks)
                 epoch_loss += loss.item()
                 writer.add_scalar('Loss/train', loss.item(), global_step)
 

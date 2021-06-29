@@ -3,28 +3,29 @@ from os import listdir
 import numpy as np
 from glob import glob
 import torch
+import torchvision.transforms as T
 from torch.utils.data import Dataset
 import logging
 from PIL import Image
+import random
 
 
 class BasicDataset(Dataset):
-    def __init__(self, imgs_dir, masks_dir, scale=1, mask_suffix='gt'):
+    def __init__(self, imgs_dir, masks_dir, scale=1, mask_suffix='gt', pad_shape=900):
         self.imgs_dir = imgs_dir
         self.masks_dir = masks_dir
         self.scale = scale
         assert 0 < scale <= 1, 'Scale must be between 0 and 1'
         self.mask_suffix = mask_suffix
-        self.ids = [splitext(file)[0] for file in listdir(imgs_dir)
-                    if not file.startswith('.')]
-        logging.info(f'Creating dataset with {len(self.ids)} examples')
-        self.transforms = transforms.Compose([
-            transforms.RandomHorizontalFlip(),
-            transforms.CenterCrop(450)
+        self.imgs_files = glob(imgs_dir + "*")
+        self.mask_files = glob(masks_dir + "*")
+        logging.info(f'Creating dataset with {len(self.imgs_files)} examples')
+        self.transform = T.Compose([
+            T.CenterCrop(900) #RandomCrop          
         ])
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.imgs_files)
 
     @classmethod
     def preprocess(cls, pil_img, scale, mode="img"):
@@ -46,29 +47,37 @@ class BasicDataset(Dataset):
         return img_trans
 
     def __getitem__(self, i):
-        idx = self.ids[i]
-        mask_file = glob(self.masks_dir + idx.replace("recon", self.mask_suffix) + '.*') #12345_recon_00000.tif -- 12345_gt_00000.tif
-        img_file = glob(self.imgs_dir + idx + '.*')
+        img_file = self.imgs_files[i]
+        mask_file = self.mask_files[i]
 
-        assert len(mask_file) == 1, \
-            f'Either no mask or multiple masks found for the ID {idx}: {mask_file}'
-        assert len(img_file) == 1, \
-            f'Either no image or multiple images found for the ID {idx}: {img_file}'
-        mask = Image.open(mask_file[0])
-        img = Image.open(img_file[0])
+        assert mask_file is not None, \
+            f'The mask {mask_file} does not exist'
+        assert img_file is not None, \
+            f'The image {img_file} does not exist'
+        mask = Image.open(mask_file)
+        img = Image.open(img_file)
         
         assert img.size == mask.size, \
-            f'Image and mask {idx} should be the same size, but are {img.size} and {mask.size}'
+            f'Image {img_file} and mask {mask_file} should be the same size, but are {img.size} and {mask.size}'
                
-        img = self.preprocess(img, self.scale, mode="img")
-        mask = self.preprocess(mask, self.scale, mode="mask")
+        # Transformations need to be done to PIL Images
+        if self.transform:
+            img = self.transform(img)
+            mask = self.transform(mask)
+            
+        if random.random() > 0.5:
+            image = T.functional.hflip(img)
+            mask = T.functional.hflip(mask)
+               
+        img = self.preprocess(img, self.scale, mode="img").astype(np.float32)
+        mask = self.preprocess(mask, self.scale, mode="mask").astype(np.uint8)
+        
+        img = torch.from_numpy(img).type(torch.FloatTensor)
+        mask = torch.from_numpy(mask).type(torch.FloatTensor)
         
         sample = {
-            'image': torch.from_numpy(img).type(torch.FloatTensor),
-            'mask': torch.from_numpy(mask).type(torch.FloatTensor)
+            'image': img,
+            'mask': mask
         }
-        
-        if self.transform:
-            sample = self.transform(sample)
                 
         return sample
