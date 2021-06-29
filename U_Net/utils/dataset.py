@@ -18,6 +18,10 @@ class BasicDataset(Dataset):
         self.ids = [splitext(file)[0] for file in listdir(imgs_dir)
                     if not file.startswith('.')]
         logging.info(f'Creating dataset with {len(self.ids)} examples')
+        self.transforms = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.CenterCrop(450)
+        ])
 
     def __len__(self):
         return len(self.ids)
@@ -58,8 +62,13 @@ class BasicDataset(Dataset):
                
         img = self.preprocess(img, self.scale, mode="img")
         mask = self.preprocess(mask, self.scale, mode="mask")
-                
-        return {
+        
+        sample = {
             'image': torch.from_numpy(img).type(torch.FloatTensor),
             'mask': torch.from_numpy(mask).type(torch.FloatTensor)
         }
+        
+        if self.transform:
+            sample = self.transform(sample)
+                
+        return sample

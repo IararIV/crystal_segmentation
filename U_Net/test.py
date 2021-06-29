@@ -31,9 +31,9 @@ def get_args():
     parser = argparse.ArgumentParser(description='Get metrics to evaluate the predictions of the U-Net',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-p', '--dir_pred', dest='dir_pred', type=str, default='/dls/tmp/lqg38422/PREDS/',
-                        help='Path to the folder containing the images')
+                        help='Path to the folder containing the images (/path/to/preds/)')
     parser.add_argument('-m', '--dir_mask', dest='dir_mask', type=str, default='/dls/tmp/lqg38422/TEST/gt/',
-                        help='Path to the folder cantaining the masks')
+                        help='Path to the folder containing the masks (/path/to/masks/)')
 
     return parser.parse_args()
 

@@ -80,18 +80,22 @@ if __name__ == '__main__':
     t = time.time()
     for dataset in train_datasets:
         print(f"--- DATASET {dataset} ---")
+        
+        if multi_axis == True:
+            pass
+        
+        else:
+            recon_path = args.dir_data + str(dataset) + "/recon/"
+            gt_path = args.dir_data + str(dataset) + "/gt/"
 
-        recon_path = args.dir_data + str(dataset) + "/recon/"
-        gt_path = args.dir_data + str(dataset) + "/gt/"
-
-        # Copy files
-        print("Copying recon...")
-        for filename in glob.glob(recon_path + "*"):
-            shutil.copy(filename, train_path_reco)
-        print("Copying gt...")
-        for filename in glob.glob(gt_path + "*"):
-            shutil.copy(filename, train_path_gt)
-        print("Done!")
+            # Copy files
+            print("Copying recon...")
+            for filename in glob.glob(recon_path + "*"):
+                shutil.copy(filename, train_path_reco)
+            print("Copying gt...")
+            for filename in glob.glob(gt_path + "*"):
+                shutil.copy(filename, train_path_gt)
+            print("Done!")
 
     # Pad all files
     print("Padding recon...")

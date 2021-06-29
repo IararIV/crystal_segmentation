@@ -146,7 +146,7 @@ def get_args():
     parser.add_argument('-i', '--dir_img', dest='dir_img', type=str, default='/dls/tmp/lqg38422/TRAIN/recon/',
                         help='Path to the folder containing the images')
     parser.add_argument('-m', '--dir_mask', dest='dir_mask', type=str, default='/dls/tmp/lqg38422/TRAIN/gt/',
-                        help='Path to the folder cantaining the masks')
+                        help='Path to the folder containing the masks')
     parser.add_argument('-c', '--dir_checkpoint', dest='dir_checkpoint', type=str, default='checkpoints/',
                         help='Path to the folder where checkpoints will be stored')
     parser.add_argument('-gpu', '--gpu_num', dest='gpu_num', type=int, default=0,
