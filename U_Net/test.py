@@ -6,26 +6,9 @@ import sys
 import numpy as np
 from PIL import Image
 import glob
+import matplotlib.pyplot as plt
 
 # python test.py -p /dls/tmp/lqg38422/TEST/gt/ -m /dls/tmp/lqg38422/TEST/gt/
-
-def MSE(preds, targets):
-    mse = ((preds - targets)**2).mean(axis=None)
-    return mse
-
-def IOU(result1, result2):
-    intersection = np.logical_and(result1, result2)
-    union = np.logical_or(result1, result2)
-    tmp = np.sum(intersection, axis=None) / np.sum(union, axis=None)
-    iou_score = tmp if not np.isnan(tmp) else 0
-    return iou_score
-
-def dice_coef(preds, targets, smooth=1):
-    intersection = np.sum(preds * targets)
-    union = np.sum(preds) + np.sum(targets)
-    dice = (2. * intersection + smooth)/(union + smooth)
-    dice = dice if not np.isnan(dice) else 0
-    return dice
 
 def get_args():
     parser = argparse.ArgumentParser(description='Get metrics to evaluate the predictions of the U-Net',
@@ -45,26 +28,31 @@ if __name__ == '__main__':
     preds_files = glob.glob(args.dir_pred + "*")
     masks_files = glob.glob(args.dir_mask + "*")
     
-    MSE_metric = 0
-    IOU_metric = 0
-    DC_metric = 0
+    background_error = []
+    crystal_error = []
+    loop_error = []
+    liquor_error = []
     
     for n in range(len(preds_files)):
         pred = np.array(Image.open(preds_files[n]))
         mask = np.array(Image.open(masks_files[n]))
+                
+        error0 = np.sum(pred[pred == mask] == 0) / np.sum(mask == 0) * 100
+        error1 = np.sum(pred[pred == mask] == 1) / np.sum(mask == 1) * 100
+        error2 = np.sum(pred[pred == mask] == 2) / np.sum(mask == 2) * 100
+        error3 = np.sum(pred[pred == mask] == 3) / np.sum(mask == 3) * 100
         
-        MSE_metric += MSE(pred, mask)
-        IOU_metric += IOU(pred, mask)
-        DC_metric += dice_coef(pred, mask)
+        background_error.append(error0)
+        crystal_error.append(error1)
+        loop_error.append(error2)
+        liquor_error.append(error3)
         
-    MSE_metric /= len(preds_files)
-    IOU_metric /= len(preds_files)
-    DC_metric /= len(preds_files)
-    
-    message = f"TEST:\nMSE: {MSE_metric}\nIOU: {IOU_metric}\nF1 Score: {DC_metric}\n"
-    
-    print(message)
-    
-    
-    
-    
+    plt.figure()
+    plt.axis([None,None,0,100])
+    plt.title("Test error - Pixels correctly predicted / Total pixels (for each class))")
+    plt.plot(background_error)
+    plt.plot(crystal_error)
+    plt.plot(loop_error)
+    plt.plot(liquor_error)
+    plt.legend(["Background error", "Crystal error", "Loop error", "Liquor error"])
+    plt.show()      
