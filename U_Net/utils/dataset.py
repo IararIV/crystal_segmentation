@@ -42,7 +42,7 @@ class BasicDataset(Dataset):
         # HWC to CHW
         img_trans = img_nd.transpose((2, 0, 1))
         if img_trans.max() > 1 and mode == "img":
-            img_trans = img_trans / 255
+            img_trans = (img_trans - img_trans.min()) / (img_trans.max() - img_trans.min())
 
         return img_trans
 
@@ -59,19 +59,19 @@ class BasicDataset(Dataset):
         
         assert img.size == mask.size, \
             f'Image {img_file} and mask {mask_file} should be the same size, but are {img.size} and {mask.size}'
-               
+                       
         # Transformations need to be done to PIL Images
         if self.transform:
             img = self.transform(img)
             mask = self.transform(mask)
-            
+                        
         if random.random() > 0.5:
             image = T.functional.hflip(img)
             mask = T.functional.hflip(mask)
-               
+                           
         img = self.preprocess(img, self.scale, mode="img").astype(np.float32)
-        mask = self.preprocess(mask, self.scale, mode="mask").astype(np.uint8)
-        
+        mask = self.preprocess(mask, self.scale, mode="mask")
+                
         img = torch.from_numpy(img).type(torch.FloatTensor)
         mask = torch.from_numpy(mask).type(torch.FloatTensor)
         

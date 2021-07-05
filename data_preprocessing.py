@@ -16,9 +16,9 @@ def get_args():
     parser = argparse.ArgumentParser(description='Create the folder with the training data',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--dir_img', dest='dir_img', type=str, default='/dls/tmp/lqg38422/TRAIN/recon/',
-                        help='Path to the folder containing the images')
+                        help='Path to the folder where images will be stored')
     parser.add_argument('-m', '--dir_mask', dest='dir_mask', type=str, default='/dls/tmp/lqg38422/TRAIN/gt/',
-                        help='Path to the folder containing the masks')
+                        help='Path to the folder where masks will be stored')
     parser.add_argument('-f', '--dir_data', dest='dir_data', type=str, default='/dls/science/users/lqg38422/DATA/',
                         help='Path to the folder containing the datasets')
     parser.add_argument('-a', '--multi_axis', dest='multi_axis', type=bool, default=True,
@@ -61,8 +61,11 @@ if __name__ == '__main__':
             for filename in glob.glob(recon_path + "*"):
                 sample.append(np.array(Image.open(filename)))
             sample = np.array(sample)
+            if sample.dtype == np.float32:
+                sample = np.uint16((sample - sample.min()) / (sample.max() - sample.min()) * 65535)
             for filename in glob.glob(gt_path + "*"):
-                segment.append(np.array(Image.open(filename)))
+                im = np.array(Image.open(filename))
+                segment.append(im)
             segment = np.array(segment)
             print("Done!")
             # Save for each axis
