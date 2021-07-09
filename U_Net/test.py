@@ -37,10 +37,22 @@ if __name__ == '__main__':
         pred = np.array(Image.open(preds_files[n]))
         mask = np.array(Image.open(masks_files[n]))
                 
-        error0 = np.sum(pred[pred == mask] == 0) / np.sum(mask == 0) * 100
-        error1 = np.sum(pred[pred == mask] == 1) / np.sum(mask == 1) * 100
-        error2 = np.sum(pred[pred == mask] == 2) / np.sum(mask == 2) * 100
-        error3 = np.sum(pred[pred == mask] == 3) / np.sum(mask == 3) * 100
+        if np.sum(mask == 0) == 0:
+            error0 = 100
+        else:
+            error0 = np.sum(pred[pred == mask] == 0) / np.sum(mask == 0) * 100
+        if np.sum(mask == 1) == 0:
+            error1 = 100
+        else:
+            error1 = np.sum(pred[pred == mask] == 1) / np.sum(mask == 1) * 100
+        if np.sum(mask == 2) == 0:
+            error2 = 100
+        else:
+            error2 = np.sum(pred[pred == mask] == 2) / np.sum(mask == 2) * 100
+        if np.sum(mask == 3) == 0:
+            error3 = 100
+        else:
+            error3 = np.sum(pred[pred == mask] == 3) / np.sum(mask == 3) * 100
         
         background_error.append(error0)
         crystal_error.append(error1)
@@ -48,7 +60,7 @@ if __name__ == '__main__':
         liquor_error.append(error3)
         
     plt.figure()
-    plt.axis([None,None,0,100])
+    plt.axis([None,None,0,110])
     plt.title("Test error - Pixels correctly predicted / Total pixels (for each class))")
     plt.plot(background_error)
     plt.plot(crystal_error)
