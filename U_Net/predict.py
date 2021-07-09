@@ -10,7 +10,6 @@ from PIL import Image
 from torchvision import transforms
 
 from unet import UNet
-from utils.data_vis import plot_img_and_mask
 from utils.dataset import BasicDataset
 
 
@@ -38,7 +37,6 @@ def predict_img(net,
             probs = probs.squeeze(0)
  
         full_mask = probs.squeeze().cpu().numpy()
-        print("Full mask:", full_mask.shape, np.unique(full_mask))
 
     return full_mask
 
@@ -61,7 +59,7 @@ def get_args():
 
 
 def get_output_filenames(args):
-    in_files = glob.glob(in_files + "*")
+    in_files = glob.glob(args.input + "*")
     out_files = []
     
     for f in in_files:
