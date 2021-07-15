@@ -21,7 +21,7 @@ class BasicDataset(Dataset):
         self.mask_files = glob(masks_dir + "*")
         logging.info(f'Creating dataset with {len(self.imgs_files)} examples')
         self.transform = T.Compose([
-            T.CenterCrop(900) #RandomCrop          
+            T.CenterCrop(900)        
         ])
 
     def __len__(self):
