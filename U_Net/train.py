@@ -15,7 +15,6 @@ from unet import UNet
 from torch.utils.tensorboard import SummaryWriter
 from utils.dataset import BasicDataset
 from torch.utils.data import DataLoader, random_split
-from dice_loss import DiceLoss
 
 
 def train_net(net,
@@ -57,13 +56,11 @@ def train_net(net,
     optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min' if net.n_classes > 1 else 'max', patience=2)
     if net.n_classes > 1:
-        #weight = None
-        #weight = torch.tensor([0.2,0.8,0.6,0.6]).cuda()
-        #criterion = DiceLoss(weight=weight)
         criterion = nn.CrossEntropyLoss()
     else:
         criterion = nn.BCEWithLogitsLoss()
 
+    torch.cuda.empty_cache()
     for epoch in range(epochs):
         net.train()
 

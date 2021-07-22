@@ -31,7 +31,6 @@ def predict_img(net,
         
         if net.n_classes > 1:
             probs = F.softmax(output, dim=1)
-            #probs = torch.argmax(probs, dim=1).float().cpu()
         else:
             probs = torch.sigmoid(output)
 
@@ -139,26 +138,18 @@ if __name__ == "__main__":
     YZ_volume = np.array(YZ_volume)
     print("Done!")
     
-    print("Predictions shape XY:", XY_volume.shape)
-    print("Predictions shape XZ:", XZ_volume.shape)
-    print("Predictions shape YZ:", YZ_volume.shape)
-    
     XY_torch = torch.tensor(XY_volume).permute(1,0,2,3)
     XZ_torch = torch.tensor(XZ_volume).permute(1,2,0,3)
     YZ_torch = torch.tensor(YZ_volume).permute(1,2,3,0)
     
-    print("Predictions shape XY:", XY_torch.shape)
-    print("Predictions shape XZ_trans:", XZ_torch.shape)
-    print("Predictions shape YZ_trans:", YZ_torch.shape)
-    
     predictions = np.stack([XY_torch, XZ_torch, YZ_torch])
-    print("Predictions shape:", predictions.shape)
     
-    predictions = np.mean(predictions, axis=0)
+    #predictions = np.max(predictions, axis=0) is worst than mean
+    print("Getting average probability from different orentations...")
+    predictions = np.mean(predictions, axis=0) #better results than max
     predictions = torch.argmax(torch.tensor(predictions), dim=0)
     predictions = np.array(predictions)
-    
-    print("FINAL SHAPE:", predictions.shape)
+    print("Done!")
     
     print("SAVING...")
     for n in tqdm(range(predictions.shape[0])):

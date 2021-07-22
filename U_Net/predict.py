@@ -19,10 +19,7 @@ def predict_img(net,
                 scale_factor=1):
     net.eval()
     
-    t = transforms.CenterCrop(900)
-    img = t(full_img)
-
-    img = torch.from_numpy(BasicDataset.preprocess(img, scale_factor))
+    img = torch.from_numpy(BasicDataset.preprocess(full_img, scale_factor))
 
     img = img.unsqueeze(1)
     img = img.to(device=device, dtype=torch.float32)

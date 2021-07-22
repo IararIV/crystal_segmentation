@@ -38,19 +38,19 @@ if __name__ == '__main__':
         mask = np.array(Image.open(masks_files[n]))
                 
         if np.sum(mask == 0) == 0:
-            error0 = 100
+            error0 = 0
         else:
             error0 = np.sum(pred[pred == mask] == 0) / np.sum(mask == 0) * 100
         if np.sum(mask == 1) == 0:
-            error1 = 100
+            error1 = 0
         else:
             error1 = np.sum(pred[pred == mask] == 1) / np.sum(mask == 1) * 100
         if np.sum(mask == 2) == 0:
-            error2 = 100
+            error2 = 0
         else:
             error2 = np.sum(pred[pred == mask] == 2) / np.sum(mask == 2) * 100
         if np.sum(mask == 3) == 0:
-            error3 = 100
+            error3 = 0
         else:
             error3 = np.sum(pred[pred == mask] == 3) / np.sum(mask == 3) * 100
         
@@ -61,10 +61,12 @@ if __name__ == '__main__':
         
     plt.figure()
     plt.axis([None,None,0,110])
-    plt.title("Test error - Pixels correctly predicted / Total pixels (for each class))")
+    plt.title("Class accuracy (right predictions / total)")
     plt.plot(background_error)
     plt.plot(crystal_error)
     plt.plot(loop_error)
     plt.plot(liquor_error)
+    plt.ylabel('Class accuracy (predict/real)')
+    plt.xlabel('Frames')
     plt.legend(["Background error", "Crystal error", "Loop error", "Liquor error"])
     plt.show()      
