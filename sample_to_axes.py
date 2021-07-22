@@ -102,7 +102,7 @@ if __name__ == '__main__':
         # Ground truth
         filename = dataset + "YZ_gt_" + str(yz).zfill(5) + ".tif"   
         im = Image.fromarray(segment[:,:,yz])
-        im.save(output_path + dataset + "_YZ/recon/" + filename)
+        im.save(output_path + dataset + "_YZ/gt/" + filename)
     print("Done!")
     
     res = time.time() - t
